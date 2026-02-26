@@ -91,7 +91,10 @@ Create or update `biosciences-skills/.mcp.json` to register the cloud endpoint:
   "mcpServers": {
     "biosciences-mcp": {
       "type": "http",
-      "url": "https://biosciences-mcp.fastmcp.app/mcp"
+      "url": "https://biosciences-mcp.fastmcp.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${BIOSCIENCES_API_KEY}"
+      }
     }
   }
 }
