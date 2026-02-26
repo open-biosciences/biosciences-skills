@@ -2,13 +2,13 @@
 
 Shared skills library and SpecKit commands for the [Open Biosciences](https://github.com/open-biosciences) platform.
 
-Owned by the **Quality & Skills Engineer** agent. This is a provider repository -- all other repos consume these skills and commands.
+**Wave 1 — Complete.** Owned by the **Quality & Skills Engineer** (Agent 8). This is a provider repository — all other repos consume these skills and commands.
 
 ## Contents
 
 ### Domain Skills
 
-Six life sciences domain skills in `.claude/skills/`:
+Seven skills in `.claude/skills/`:
 
 | Skill | Domain |
 |-------|--------|
@@ -18,19 +18,25 @@ Six life sciences domain skills in `.claude/skills/`:
 | lifesciences-graph-builder | Knowledge graph construction patterns |
 | lifesciences-pharmacology | Drug targets, mechanisms, pharmacology |
 | lifesciences-proteomics | Protein structure, interactions, pathways |
+| security-review | Pre-commit security review (secrets, paths, config hygiene) |
 
 ### Commands
 
-Fifteen commands in `.claude/commands/`:
-
-**SpecKit SDLC** (9 commands, per ADR-003):
-`speckit.constitution`, `speckit.specify`, `speckit.clarify`, `speckit.plan`, `speckit.tasks`, `speckit.taskstoissues`, `speckit.analyze`, `speckit.checklist`, `speckit.implement`
+Six commands in `.claude/commands/`:
 
 **Graphiti knowledge graph** (4 commands):
 `graphiti-health`, `graphiti-verify`, `graphiti-aura-stats`, `graphiti-docker-stats`
 
 **Scaffold** (2 commands):
 `scaffold-fastmcp`, `scaffold-fastmcp-v2`
+
+### SpecKit SDLC Commands
+
+The 9 SpecKit workflow commands (per ADR-003) live in [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) `.claude/commands/`:
+
+`speckit.constitution`, `speckit.specify`, `speckit.clarify`, `speckit.plan`, `speckit.tasks`, `speckit.taskstoissues`, `speckit.analyze`, `speckit.checklist`, `speckit.implement`
+
+They are available in any Claude Code session opened at the workspace root or inside `biosciences-architecture/`.
 
 ## Usage
 
@@ -47,13 +53,13 @@ SpecKit workflow example:
 
 ## Dependencies
 
-- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) -- ADR-002 (skills structure) and ADR-003 (SpecKit workflow)
+- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) — ADR-002 (skills structure) and ADR-003 (SpecKit workflow)
 
 ## Related Repos
 
-- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) -- governance and ADRs
-- [biosciences-evaluation](https://github.com/open-biosciences/biosciences-evaluation) -- quality gates that measure skill effectiveness
-- [biosciences-program](https://github.com/open-biosciences/biosciences-program) -- migration coordination
+- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) — governance and ADRs (SpecKit commands live here)
+- [biosciences-evaluation](https://github.com/open-biosciences/biosciences-evaluation) — quality gates that measure skill effectiveness
+- [biosciences-program](https://github.com/open-biosciences/biosciences-program) — migration coordination
 
 ## License
 
