@@ -74,12 +74,6 @@ New skills must follow ADR-002:
 - **Upstream**: `biosciences-architecture` (ADR-002, ADR-003 governance)
 - **Downstream**: All repos consume skills and SpecKit commands
 
-## Pre-Migration Source
-
-Until Wave 1 migration:
-- Skills: `/home/donbr/graphiti-org/lifesciences-research/.claude/skills/`
-- Commands: `/home/donbr/graphiti-org/lifesciences-research/.claude/commands/`
-
 ## FastMCP Cloud Integration
 
 ### Adding biosciences-mcp to .mcp.json

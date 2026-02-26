@@ -20,7 +20,7 @@ Create the complete scaffolding for a new FastMCP MCP server following the Life 
 ## Generated Structure
 
 ```
-src/lifesciences_mcp/
+src/biosciences_mcp/
 ├── clients/
 │   └── <api>.py              # Client stub (ADR-006)
 ├── servers/
@@ -39,20 +39,20 @@ tests/
 ### 1. Validate Input
 
 - Extract API name from arguments (lowercase, alphanumeric with underscores)
-- Validate against existing servers in `src/lifesciences_mcp/servers/`
+- Validate against existing servers in `src/biosciences_mcp/servers/`
 - If server already exists, abort with message
 
 ### 2. Read Existing Patterns
 
 Read the following files to understand established patterns:
-- `src/lifesciences_mcp/servers/hgnc.py` - Server pattern
-- `src/lifesciences_mcp/clients/hgnc.py` - Client pattern
-- `src/lifesciences_mcp/models/envelopes.py` - Envelope models
+- `src/biosciences_mcp/servers/hgnc.py` - Server pattern
+- `src/biosciences_mcp/clients/hgnc.py` - Client pattern
+- `src/biosciences_mcp/models/envelopes.py` - Envelope models
 - `tests/integration/test_hgnc_api.py` - Test pattern
 
 ### 3. Generate Server File
 
-Create `src/lifesciences_mcp/servers/<api>.py` with:
+Create `src/biosciences_mcp/servers/<api>.py` with:
 
 ```python
 """<API_NAME> MCP Server - <Brief description>.
@@ -62,13 +62,13 @@ This server provides tools for <API purpose>:
 - get_<entity>: Strict lookup by <ID_TYPE> CURIE
 
 Usage:
-    uv run fastmcp run src/lifesciences_mcp/servers/<api>.py
+    uv run fastmcp run src/biosciences_mcp/servers/<api>.py
 """
 
 from fastmcp import FastMCP
 
-from lifesciences_mcp.clients import <API>Client
-from lifesciences_mcp.models import (
+from biosciences_mcp.clients import <API>Client
+from biosciences_mcp.models import (
     ErrorEnvelope,
     PaginationEnvelope,
 )
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
 ### 4. Generate Client Stub
 
-Create `src/lifesciences_mcp/clients/<api>.py` (ADR-006 Single Writer):
+Create `src/biosciences_mcp/clients/<api>.py` (ADR-006 Single Writer):
 
 ```python
 class <API>Client(LifeSciencesClient):
@@ -232,8 +232,8 @@ Run with: pytest tests/integration/test_<api>_api.py -v -m integration
 
 import pytest
 
-from lifesciences_mcp.clients import <API>Client
-from lifesciences_mcp.models import ErrorEnvelope, PaginationEnvelope
+from biosciences_mcp.clients import <API>Client
+from biosciences_mcp.models import ErrorEnvelope, PaginationEnvelope
 
 
 @pytest.mark.integration
@@ -290,10 +290,10 @@ class Test<API>ClientIntegration:
 
 ### 6. Update Package Exports
 
-Add new client to `src/lifesciences_mcp/__init__.py`:
+Add new client to `src/biosciences_mcp/__init__.py`:
 
 ```python
-from lifesciences_mcp.clients import <API>Client
+from biosciences_mcp.clients import <API>Client
 ```
 
 And add to `__all__` list.
@@ -314,13 +314,13 @@ Print:
 ## Scaffold Complete: <API_NAME> MCP Server
 
 Created files:
-- src/lifesciences_mcp/servers/<api>.py
-- src/lifesciences_mcp/clients/<api>.py
+- src/biosciences_mcp/servers/<api>.py
+- src/biosciences_mcp/clients/<api>.py
 - tests/integration/test_<api>_api.py
 - specs/<NNN>-<api>-mcp-server/ (feature directory)
 
 Updated files:
-- src/lifesciences_mcp/__init__.py (added export)
+- src/biosciences_mcp/__init__.py (added export)
 
 Next steps:
 1. Run /speckit.specify to create the specification
