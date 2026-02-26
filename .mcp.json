@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "biosciences-mcp": {
+      "type": "http",
+      "url": "https://biosciences-mcp.fastmcp.app/mcp"
+    }
+  }
+}
