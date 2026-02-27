@@ -2,7 +2,9 @@
 
 ## Purpose
 
-Shared skills library and SpecKit commands for the Open Biosciences platform. This repo is co-owned by the **Quality & Skills Engineer** agent.
+Domain skills library for the Open Biosciences platform. This repo is co-owned by the **Quality & Skills Engineer** agent.
+
+Domain skills are research-facing — they encode life-sciences workflows (genomics, proteomics, pharmacology, etc.) and are consumed by agents and researchers. Platform-facing developer skills (scaffold commands, security review) live in [platform-skills](https://github.com/open-biosciences/platform-skills).
 
 ## Skills Architecture (ADR-002)
 
@@ -16,7 +18,7 @@ Skills are stored in `.claude/skills/` and follow the Platform-as-Product patter
     └── scripts/            # Validation or execution scripts
 ```
 
-## Domain Skills (from predecessor)
+## Domain Skills (6)
 
 | Skill | Purpose | Trigger |
 |-------|---------|---------|
@@ -26,13 +28,6 @@ Skills are stored in `.claude/skills/` and follow the Platform-as-Product patter
 | `lifesciences-pharmacology` | ChEMBL, PubChem, DrugBank, IUPHAR curl endpoints | "drug search", "compound lookup" |
 | `lifesciences-clinical` | Open Targets, ClinicalTrials.gov curl endpoints | "clinical trials", "disease associations" |
 | `lifesciences-graph-builder` | Fuzzy-to-Fact orchestration workflow | "build graph", "knowledge graph" |
-
-## Scaffold Skills
-
-| Skill | Purpose | Trigger |
-|-------|---------|---------|
-| `scaffold-fastmcp` | Create new MCP server with standard structure | "Scaffold a new API", "Create MCP server" |
-| `scaffold-fastmcp-v2` | Updated v2 scaffold | "Scaffold FastMCP v2" |
 
 ## Graphiti Skills (Global)
 
@@ -47,9 +42,7 @@ These 4 skills are installed globally in `~/.claude/skills/` and available from 
 
 ## SpecKit Commands (ADR-003)
 
-SpecKit commands live in **`biosciences-architecture/.claude/commands/`** (moved from this repo — see ADR-003).
-
-They are available in any Claude Code session opened inside `biosciences-architecture/` or the workspace root.
+SpecKit commands live in **`biosciences-program/.claude/commands/`**. They are available in any Claude Code session opened inside `biosciences-program/` or the workspace root.
 
 | Command | Purpose |
 |---------|---------|
@@ -74,7 +67,7 @@ New skills must follow ADR-002:
 ## Dependencies
 
 - **Upstream**: `biosciences-architecture` (ADR-002, ADR-003 governance)
-- **Downstream**: All repos consume skills and SpecKit commands
+- **Downstream**: All repos consume domain skills
 
 ## FastMCP Cloud Integration
 
@@ -171,16 +164,3 @@ After migration to the unified gateway, update domain skill pseudocode and examp
 ```
 
 The Fuzzy-to-Fact workflow, CURIE formats, and all tool arguments remain unchanged. Only the Claude Code prefix (`mcp__<server>__`) changes from server-specific to `mcp__biosciences-mcp__`.
-
-### scaffold-fastmcp Updates
-
-The `scaffold-fastmcp.md` skill currently targets the predecessor `lifesciences-mcp` package and references `lifesciences_mcp` import paths. It should be updated to:
-
-1. Target `biosciences_mcp` package paths (`src/biosciences_mcp/servers/<api>.py`)
-2. Reference `biosciences-mcp` as the canonical gateway pattern (mount new server into `gateway.py`)
-3. Include `fastmcp deploy` as the final deployment step after `fastmcp auth`:
-   ```bash
-   fastmcp auth                          # Authenticate with FastMCP Cloud (one-time)
-   fastmcp deploy src/biosciences_mcp/servers/gateway.py  # Deploy unified gateway
-   ```
-4. Add the new server to `gateway.py` `mcp.mount()` block with a `tool_names` mapping following the `{server}_{operation}` convention
