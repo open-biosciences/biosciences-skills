@@ -22,13 +22,14 @@ Seven skills in `.claude/skills/`:
 
 ### Commands
 
-Six commands in `.claude/commands/`:
-
-**Graphiti knowledge graph** (4 commands):
-`graphiti-health`, `graphiti-verify`, `graphiti-aura-stats`, `graphiti-docker-stats`
+Two commands in `.claude/commands/`:
 
 **Scaffold** (2 commands):
 `scaffold-fastmcp`, `scaffold-fastmcp-v2`
+
+### Graphiti Skills (Global)
+
+The 4 Graphiti knowledge graph skills (`graphiti-verify`, `graphiti-health`, `graphiti-aura-stats`, `graphiti-docker-stats`) are installed globally in `~/.claude/skills/` and available from any repo via `/graphiti-*`.
 
 ### SpecKit SDLC Commands
 

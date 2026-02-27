@@ -34,14 +34,16 @@ Skills are stored in `.claude/skills/` and follow the Platform-as-Product patter
 | `scaffold-fastmcp` | Create new MCP server with standard structure | "Scaffold a new API", "Create MCP server" |
 | `scaffold-fastmcp-v2` | Updated v2 scaffold | "Scaffold FastMCP v2" |
 
-## Graphiti Skills
+## Graphiti Skills (Global)
+
+These 4 skills are installed globally in `~/.claude/skills/` and available from any repo:
 
 | Skill | Purpose |
 |-------|---------|
-| `graphiti-aura-stats` | Neo4j Aura graph statistics |
-| `graphiti-docker-stats` | Local Docker graph statistics |
-| `graphiti-health` | Graphiti server health check |
-| `graphiti-verify` | Verify Graphiti MCP connections |
+| `graphiti-verify` | Day 1 verification sequence (5 checks) |
+| `graphiti-health` | Unified health status report |
+| `graphiti-aura-stats` | Neo4j Aura production analytics |
+| `graphiti-docker-stats` | Docker dev environment analytics |
 
 ## SpecKit Commands (ADR-003)
 
