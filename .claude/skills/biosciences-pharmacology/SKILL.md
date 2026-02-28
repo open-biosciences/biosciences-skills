@@ -1,5 +1,5 @@
 ---
-name: lifesciences-pharmacology
+name: biosciences-pharmacology
 description: "Queries pharmacology databases (ChEMBL, PubChem, DrugBank, IUPHAR) via curl for drug mechanisms, target identification, bioactivity profiling, and indication discovery. This skill should be used when the user asks to \"find drug mechanisms\", \"identify drug targets\", \"analyze bioactivity data\", \"discover drug indications\", or mentions ChEMBL IDs, mechanisms of action, IC50/Ki values, drug-target relationships, or compound similarity searches."
 ---
 

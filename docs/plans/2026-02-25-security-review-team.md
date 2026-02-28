@@ -17,7 +17,7 @@
 
 **Step 1: Write the SKILL.md file**
 
-Create the skill with frontmatter matching the project convention (see `lifesciences-clinical/SKILL.md` for format). The skill must contain:
+Create the skill with frontmatter matching the project convention (see `biosciences-clinical/SKILL.md` for format). The skill must contain:
 
 1. **Frontmatter** — name: `security-review`, description triggers on "security scan", "pre-commit check", "review for secrets"
 

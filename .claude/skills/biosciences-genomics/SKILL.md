@@ -1,5 +1,5 @@
 ---
-name: lifesciences-genomics
+name: biosciences-genomics
 description: "Queries genomic databases (Ensembl, NCBI, HGNC) via curl for gene lookup, variant annotation, orthology, and cross-database ID resolution. This skill should be used when the user asks to \"annotate variants\", \"find orthologs\", \"map gene IDs\", \"analyze linkage disequilibrium\", or mentions gene symbols, ENSG IDs, HGNC identifiers, VEP annotation, LD analysis, HGVS notation, or DNA sequences."
 ---
 

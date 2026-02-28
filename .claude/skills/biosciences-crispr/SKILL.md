@@ -1,5 +1,5 @@
 ---
-name: lifesciences-crispr
+name: biosciences-crispr
 description: "Validates synthetic lethality claims from CRISPR knockout screens using BioGRID ORCS 5-phase workflow. This skill should be used when the user asks to \"validate synthetic lethality\", \"query CRISPR essentiality data\", \"find gene dependencies\", \"compare cell line screens\", or mentions BioGRID ORCS, gene knockout data, essentiality scores (CERES, MAGeCK, BAGEL), or asks to validate claims from published CRISPR papers."
 ---
 

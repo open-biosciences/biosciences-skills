@@ -1,5 +1,5 @@
 ---
-name: lifesciences-clinical
+name: biosciences-clinical
 description: "Queries clinical databases (Open Targets, ClinicalTrials.gov) via curl for target-disease associations, target tractability assessment, and clinical trial discovery. This skill should be used when the user asks to \"validate drug targets\", \"find clinical trials\", \"assess target tractability\", \"discover disease associations\", or mentions Open Targets scores, NCT identifiers, target-disease evidence, druggability assessment, or translational research workflows."
 ---
 

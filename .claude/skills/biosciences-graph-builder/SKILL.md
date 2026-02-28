@@ -1,5 +1,5 @@
 ---
-name: lifesciences-graph-builder
+name: biosciences-graph-builder
 description: "Orchestrates life sciences APIs to build knowledge graphs using the Fuzzy-to-Fact protocol, combining MCPs for nodes and curl for edges, then persisting to Graphiti. This skill should be used when the user asks to \"build knowledge graphs\", \"find biological connections\", \"explore drug repurposing\", \"validate drug targets\", or mentions traversing gene→protein→pathway→drug→disease paths, multi-API orchestration, or graph persistence workflows."
 ---
 
@@ -203,7 +203,7 @@ curl -s "https://clinicaltrials.gov/api/v2/studies?query.intr=venetoclax&filter.
 
 ## See Also
 
-- **lifesciences-genomics**: Ensembl, NCBI, HGNC endpoints
-- **lifesciences-proteomics**: UniProt, STRING, BioGRID endpoints
-- **lifesciences-pharmacology**: ChEMBL, PubChem, IUPHAR endpoints
-- **lifesciences-clinical**: Open Targets, ClinicalTrials.gov endpoints
+- **biosciences-genomics**: Ensembl, NCBI, HGNC endpoints
+- **biosciences-proteomics**: UniProt, STRING, BioGRID endpoints
+- **biosciences-pharmacology**: ChEMBL, PubChem, IUPHAR endpoints
+- **biosciences-clinical**: Open Targets, ClinicalTrials.gov endpoints

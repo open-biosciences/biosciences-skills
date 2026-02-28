@@ -22,12 +22,12 @@ Skills are stored in `.claude/skills/` and follow the Platform-as-Product patter
 
 | Skill | Purpose | Trigger |
 |-------|---------|---------|
-| `lifesciences-crispr` | BioGRID ORCS 5-phase synthetic lethality validation | "CRISPR screen", "synthetic lethality" |
-| `lifesciences-genomics` | Ensembl, NCBI, HGNC curl endpoints | "gene lookup", "genomics query" |
-| `lifesciences-proteomics` | UniProt, STRING, BioGRID curl endpoints | "protein search", "interaction network" |
-| `lifesciences-pharmacology` | ChEMBL, PubChem, DrugBank, IUPHAR curl endpoints | "drug search", "compound lookup" |
-| `lifesciences-clinical` | Open Targets, ClinicalTrials.gov curl endpoints | "clinical trials", "disease associations" |
-| `lifesciences-graph-builder` | Fuzzy-to-Fact orchestration workflow | "build graph", "knowledge graph" |
+| `biosciences-crispr` | BioGRID ORCS 5-phase synthetic lethality validation | "CRISPR screen", "synthetic lethality" |
+| `biosciences-genomics` | Ensembl, NCBI, HGNC curl endpoints | "gene lookup", "genomics query" |
+| `biosciences-proteomics` | UniProt, STRING, BioGRID curl endpoints | "protein search", "interaction network" |
+| `biosciences-pharmacology` | ChEMBL, PubChem, DrugBank, IUPHAR curl endpoints | "drug search", "compound lookup" |
+| `biosciences-clinical` | Open Targets, ClinicalTrials.gov curl endpoints | "clinical trials", "disease associations" |
+| `biosciences-graph-builder` | Fuzzy-to-Fact orchestration workflow | "build graph", "knowledge graph" |
 
 ## Graphiti Skills (Global)
 
@@ -147,7 +147,7 @@ Full tool inventory (gateway name → Claude Code name):
 
 ### Domain Skill Migration Note
 
-Existing domain skills (e.g., `lifesciences-graph-builder`, `lifesciences-genomics`) reference tools using server-specific prefixes from when each API had its own MCP server:
+Existing domain skills (e.g., `biosciences-graph-builder`, `biosciences-genomics`) reference tools using server-specific prefixes from when each API had its own MCP server:
 
 ```python
 # Old pattern (individual servers, e.g. mcp__hgnc__search_genes)
