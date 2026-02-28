@@ -12,12 +12,12 @@ Six skills in `.claude/skills/`:
 
 | Skill | Domain |
 |-------|--------|
-| lifesciences-clinical | Clinical trials and regulatory data |
-| lifesciences-crispr | CRISPR gene editing workflows |
-| lifesciences-genomics | Genomic data analysis and annotation |
-| lifesciences-graph-builder | Knowledge graph construction patterns |
-| lifesciences-pharmacology | Drug targets, mechanisms, pharmacology |
-| lifesciences-proteomics | Protein structure, interactions, pathways |
+| biosciences-clinical | Clinical trials and regulatory data |
+| biosciences-crispr | CRISPR gene editing workflows |
+| biosciences-genomics | Genomic data analysis and annotation |
+| biosciences-graph-builder | Knowledge graph construction patterns |
+| biosciences-pharmacology | Drug targets, mechanisms, pharmacology |
+| biosciences-proteomics | Protein structure, interactions, pathways |
 
 ### Platform Skills
 
