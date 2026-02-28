@@ -1,60 +1,120 @@
 ---
 name: biosciences-clinical
-description: "Queries clinical databases (Open Targets, ClinicalTrials.gov) via curl for target-disease associations, target tractability assessment, and clinical trial discovery. This skill should be used when the user asks to \"validate drug targets\", \"find clinical trials\", \"assess target tractability\", \"discover disease associations\", or mentions Open Targets scores, NCT identifiers, target-disease evidence, druggability assessment, or translational research workflows."
+description: "Queries clinical databases (Open Targets, ClinicalTrials.gov) via MCP tools for target-disease associations, target tractability assessment, and clinical trial discovery. Falls back to curl when MCP is unavailable. This skill should be used when the user asks to \"validate drug targets\", \"find clinical trials\", \"assess target tractability\", \"discover disease associations\", or mentions Open Targets scores, NCT identifiers, target-disease evidence, druggability assessment, or translational research workflows."
 ---
 
-# Clinical & Translational API Skills
+# Biosciences Clinical & Translational API Skills
 
-Query clinical databases directly via curl. These endpoints complement the Life Sciences MCPs.
+Query clinical databases via MCP tools (primary) or curl (fallback).
 
-## Quick Reference
+## Grounding Rule
 
-| Task | API | Endpoint |
-|------|-----|----------|
-| Target-disease associations | Open Targets | GraphQL `/graphql` |
-| Target tractability | Open Targets | GraphQL `tractability` |
-| Known drugs for target | Open Targets | GraphQL `knownDrugs` |
-| Search clinical trials | ClinicalTrials.gov | `/studies` |
-| Get trial details | ClinicalTrials.gov | `/studies/{NCT}` |
+All target-disease associations, drug names, trial IDs, and clinical data MUST come from API results. Do NOT provide NCT IDs, trial statuses, or drug-disease associations from training knowledge. If a query returns no results, report "No results found."
 
-## Open Targets GraphQL
+## MCP Token Budgeting (`slim` Parameter)
 
-Open Targets uses GraphQL - construct queries to get exactly what you need in one call.
+All MCP tools in this skill support a `slim` parameter for token-efficient queries:
 
-### Basic Target-Disease Associations
+**When to use `slim=true`:**
+- LOCATE phase: Fast candidate lists (returns ~20 tokens/entity vs ~115-300 tokens)
+- Batch operations: Resolving multiple entities in a single turn
+- Exploration: Quick overviews without full metadata
 
+**When to use `slim=false` (default):**
+- RETRIEVE phase: Need full metadata with cross-references
+- Validation: Verifying detailed properties
+- Graph persistence: Collecting complete entity records
+
+**Example:**
+```
+# LOCATE: Find top 10 gene candidates (slim=true for speed)
+Call `hgnc_search_genes` with: {"query": "TNF", "slim": true, "page_size": 10}
+→ Claude Code name: mcp__biosciences-mcp__hgnc_search_genes
+→ Returns minimal fields: ID, symbol, name only (~20 tokens each)
+
+# RETRIEVE: Get full record for validation (slim=false, default)
+Call `hgnc_get_gene` with: {"hgnc_id": "HGNC:11892"}
+→ Claude Code name: mcp__biosciences-mcp__hgnc_get_gene
+→ Returns complete metadata with cross-references (~115 tokens)
+```
+
+**Impact:** Using `slim=true` during LOCATE enables 5-10x more entities per LLM turn without context overflow.
+
+**Reference:** This token budgeting pattern is detailed in `reference/prior-art-api-patterns.md` (Section 7.1).
+
+## LOCATE → RETRIEVE Patterns
+
+### Open Targets: Target-Disease Associations
+
+**LOCATE**: Search for target or disease
+
+PRIMARY (MCP tool):
+```
+Call `opentargets_search_targets` with: {"query": "breast cancer"}
+→ Claude Code name: mcp__biosciences-mcp__opentargets_search_targets
+→ Returns: target/disease IDs and names
+```
+
+FALLBACK (curl):
 ```bash
-# Get diseases associated with target (TP53)
+curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ search(queryString: \"breast cancer\", entityNames: [\"disease\"]) { hits { id name } } }"}' \
+  | jq '.data.search.hits[:3]'
+```
+
+**RETRIEVE**: Get diseases associated with target
+
+PRIMARY (MCP tool):
+```
+Call `opentargets_get_associations` with: {"ensembl_id": "ENSG00000141510"}
+→ Claude Code name: mcp__biosciences-mcp__opentargets_get_associations
+→ Returns: associated diseases with scores and evidence types
+```
+
+FALLBACK (curl):
+```bash
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
   -d '{"query": "{ target(ensemblId: \"ENSG00000141510\") { approvedSymbol associatedDiseases(page: {index: 0, size: 5}) { rows { disease { id name } score } } } }"}' \
-  | jq '.data.target.associatedDiseases.rows[] | {disease: .disease.name, score}'
+  | jq '.data.target.associatedDiseases.rows[] | {disease: .disease.name, id: .disease.id, score}'
 ```
 
-### Target Details with Tractability
+### Open Targets: Target Tractability — curl only
 
+**RETRIEVE**: Get druggability assessment
 ```bash
-# Get target with druggability assessment
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
   -d '{"query": "{ target(ensemblId: \"ENSG00000141510\") { approvedSymbol biotype tractability { label modality value } } }"}' \
   | jq '.data.target | {symbol: .approvedSymbol, tractability}'
 ```
 
-### Known Drugs for Target
+### Open Targets: Known Drugs for Target
 
+**LOCATE**: Find approved drugs targeting a protein
+
+PRIMARY (MCP tool):
+```
+Call `opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
+→ Claude Code name: mcp__biosciences-mcp__opentargets_get_target
+→ Returns: knownDrugs with drug name, phase, mechanismOfAction
+```
+
+FALLBACK (curl):
 ```bash
-# Get approved drugs targeting a protein
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
-  -d '{"query": "{ target(ensemblId: \"ENSG00000171791\") { approvedSymbol knownDrugs(page: {size: 5}) { rows { drug { name } phase mechanismOfAction } } } }"}' \
+  -d '{"query": "{ target(ensemblId: \"ENSG00000171791\") { approvedSymbol knownDrugs(page: {index: 0, size: 5}) { rows { drug { name id } phase mechanismOfAction } } } }"}' \
   | jq '.data.target.knownDrugs.rows[] | {drug: .drug.name, phase, mechanism: .mechanismOfAction}'
 ```
 
-### Nested Query: All-in-One
+**Note**: Always include `index: 0` in pagination — omitting it causes errors.
 
+### Open Targets: All-in-One Nested Query — curl only
+
+**RETRIEVE**: Get target + diseases + drugs + tractability in single call
 ```bash
-# Get target + diseases + drugs + tractability in single call
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
   -d '{
@@ -63,69 +123,85 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
         approvedSymbol
         biotype
         tractability { label value }
-        knownDrugs(page: {size: 3}) {
-          rows { drug { name } phase }
+        knownDrugs(page: {index: 0, size: 3}) {
+          rows { drug { name } phase mechanismOfAction }
         }
-        associatedDiseases(page: {size: 3}) {
-          rows { disease { name } score }
+        associatedDiseases(page: {index: 0, size: 3}) {
+          rows { disease { name id } score }
         }
       }
     }"
   }' | jq '.data.target'
 ```
 
-### Disease-Centric Queries
+### Open Targets: Disease-Centric Queries — curl only
 
+**RETRIEVE**: Get targets associated with disease
 ```bash
-# Get targets associated with disease (breast cancer = EFO_0000305)
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
-  -d '{"query": "{ disease(efoId: \"EFO_0000305\") { name associatedTargets(page: {size: 5}) { rows { target { approvedSymbol } score } } } }"}' \
+  -d '{"query": "{ disease(efoId: \"EFO_0000305\") { name associatedTargets(page: {index: 0, size: 5}) { rows { target { approvedSymbol } score } } } }"}' \
   | jq '.data.disease.associatedTargets.rows[] | {target: .target.approvedSymbol, score}'
-
-# Search for disease by name
-curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ search(queryString: \"breast cancer\", entityNames: [\"disease\"]) { hits { id name } } }"}' \
-  | jq '.data.search.hits[:3]'
-```
-
-### Evidence Breakdown
-
-```bash
-# Get association with evidence type scores
-curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ disease(efoId: \"MONDO_0018875\") { name associatedTargets(page: {size: 3}) { rows { target { approvedSymbol } score datatypeScores { id score } } } } }"}' \
-  | jq '.data.disease.associatedTargets.rows[] | {target: .target.approvedSymbol, overall: .score, evidence: .datatypeScores}'
 ```
 
 ## ClinicalTrials.gov API v2
 
-### Search Clinical Trials
+### LOCATE: Search Clinical Trials
 
-```bash
-# Search by condition
-curl -s "https://clinicaltrials.gov/api/v2/studies?query.cond=breast+cancer&pageSize=3&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, title: .protocolSection.identificationModule.briefTitle, status: .protocolSection.statusModule.overallStatus}'
+**By condition**:
 
-# Search by intervention (drug)
-curl -s "https://clinicaltrials.gov/api/v2/studies?query.intr=venetoclax&pageSize=3&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, phase: .protocolSection.designModule.phases, status: .protocolSection.statusModule.overallStatus}'
-
-# Filter by status
-curl -s "https://clinicaltrials.gov/api/v2/studies?filter.overallStatus=RECRUITING&query.cond=leukemia&pageSize=3&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, title: .protocolSection.identificationModule.briefTitle}'
-
-# Filter by phase
-curl -s "https://clinicaltrials.gov/api/v2/studies?filter.advanced=AREA[Phase]PHASE3&query.cond=cancer&pageSize=3&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, phases: .protocolSection.designModule.phases}'
+PRIMARY (MCP tool):
+```
+Call `clinicaltrials_search_trials` with: {"query": "breast cancer"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+→ Returns: NCT IDs, titles, phases, statuses
 ```
 
-### Get Trial Details
-
+FALLBACK (curl):
 ```bash
-# Get full trial by NCT ID
+curl -s "https://clinicaltrials.gov/api/v2/studies?query.cond=breast+cancer&pageSize=3&format=json" \
+  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, title: .protocolSection.identificationModule.briefTitle, status: .protocolSection.statusModule.overallStatus}'
+```
+
+**By intervention (drug)**:
+
+PRIMARY (MCP tool):
+```
+Call `clinicaltrials_search_trials` with: {"query": "venetoclax"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+```
+
+FALLBACK (curl):
+```bash
+curl -s "https://clinicaltrials.gov/api/v2/studies?query.intr=venetoclax&pageSize=3&format=json" \
+  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, phase: .protocolSection.designModule.phases, status: .protocolSection.statusModule.overallStatus}'
+```
+
+**By status** (curl only — more parameter control):
+```bash
+curl -s "https://clinicaltrials.gov/api/v2/studies?filter.overallStatus=RECRUITING&query.cond=leukemia&pageSize=3&format=json" \
+  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, title: .protocolSection.identificationModule.briefTitle}'
+```
+
+**By study type** (use `query.term` with AREA syntax — `filter.studyType` is NOT valid in v2):
+```bash
+curl -s "https://clinicaltrials.gov/api/v2/studies?query.term=AREA[StudyType]INTERVENTIONAL&query.cond=cancer&pageSize=3&format=json" \
+  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId}'
+```
+
+### RETRIEVE: Get Trial Details
+
+**By NCT ID**:
+
+PRIMARY (MCP tool):
+```
+Call `clinicaltrials_get_trial` with: {"nct_id": "NCT00461032"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_get_trial
+→ Returns: title, status, phase, conditions, interventions
+```
+
+FALLBACK (curl):
+```bash
 curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
   | jq '{
     nct: .protocolSection.identificationModule.nctId,
@@ -135,98 +211,116 @@ curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
     conditions: .protocolSection.conditionsModule.conditions,
     interventions: [.protocolSection.armsInterventionsModule.interventions[]?.name]
   }'
-
-# Get eligibility criteria
-curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
-  | jq '.protocolSection.eligibilityModule | {criteria: .eligibilityCriteria, minAge, maxAge, sex}'
 ```
 
-### Pagination
+### RETRIEVE: Get Trial Locations
 
+PRIMARY (MCP tool):
+```
+Call `clinicaltrials_get_trial_locations` with: {"nct_id": "NCT00461032"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_get_trial_locations
+→ Returns: trial site locations
+```
+
+FALLBACK (curl):
 ```bash
-# Get page token for next page
-RESPONSE=$(curl -s "https://clinicaltrials.gov/api/v2/studies?query.cond=cancer&pageSize=10&format=json")
-NEXT_TOKEN=$(echo $RESPONSE | jq -r '.nextPageToken')
-
-# Get next page
-curl -s "https://clinicaltrials.gov/api/v2/studies?query.cond=cancer&pageSize=10&pageToken=$NEXT_TOKEN&format=json"
+curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
+  | jq '.protocolSection.contactsLocationsModule.locations[:5]'
 ```
+
+## Quick Reference
+
+| Task | Pattern | MCP Tool (primary) | Curl Endpoint (fallback) |
+|------|---------|-------------------|--------------------------|
+| Search diseases | LOCATE | `opentargets_search_targets` | Open Targets GraphQL `search` |
+| Target-disease associations | RETRIEVE | `opentargets_get_associations` | Open Targets GraphQL `associatedDiseases` |
+| Target tractability | RETRIEVE | (curl only) | Open Targets GraphQL `tractability` |
+| Known drugs for target | LOCATE | `opentargets_get_target` | Open Targets GraphQL `knownDrugs` |
+| Disease → targets | RETRIEVE | (curl only) | Open Targets GraphQL `associatedTargets` |
+| Search trials | LOCATE | `clinicaltrials_search_trials` | ClinicalTrials.gov `/studies?query.*` |
+| Get trial details | RETRIEVE | `clinicaltrials_get_trial` | ClinicalTrials.gov `/studies/{NCT}` |
+
+## ClinicalTrials.gov v2 Valid Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `query.cond` | Condition/disease | `breast+cancer` |
+| `query.intr` | Intervention/drug | `venetoclax` |
+| `query.term` | General search (supports AREA syntax) | `AREA[StudyType]INTERVENTIONAL` |
+| `filter.overallStatus` | Status filter | `RECRUITING`, `COMPLETED` |
+| `pageSize` | Results per page | `10` |
+| `pageToken` | Pagination token | From previous response |
+| `format` | Response format | `json` |
+
+**Invalid**: `filter.studyType` does NOT exist in v2 API.
+
+## ID Format Reference
+
+| Database | API Argument | Graph CURIE | Example |
+|----------|-------------|-------------|---------|
+| Open Targets (target) | `ENSG00000141510` | `ENSG00000141510` | Ensembl gene ID |
+| Open Targets (disease) | `EFO_0000305` | `EFO:0000305` | EFO with underscore for API |
+| ClinicalTrials.gov | `NCT03312634` | `NCT03312634` | NCT ID (bare) |
 
 ## Common Workflows
 
 ### Drug Target Validation Pipeline
 
-```bash
-# 1. Get target-disease association score
-curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ target(ensemblId: \"ENSG00000171791\") { approvedSymbol associatedDiseases(page: {size: 1}) { rows { disease { id name } score } } } }"}' \
-  | jq '.data.target'
+```
+# Step 1: RETRIEVE — Get target-disease association score (MCP)
+Call `opentargets_get_associations` with: {"ensembl_id": "ENSG00000171791"}
+→ Claude Code name: mcp__biosciences-mcp__opentargets_get_associations
 
-# 2. Check tractability
+# Step 2: RETRIEVE — Check tractability (curl — no MCP tool for this)
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -H "Content-Type: application/json" \
   -d '{"query": "{ target(ensemblId: \"ENSG00000171791\") { tractability { label modality value } } }"}' \
   | jq '.data.target.tractability'
 
-# 3. Find clinical trials for the target
-curl -s "https://clinicaltrials.gov/api/v2/studies?query.intr=BCL2&filter.overallStatus=RECRUITING&pageSize=5&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, title: .protocolSection.identificationModule.briefTitle}'
+# Step 3: LOCATE — Find clinical trials (MCP)
+Call `clinicaltrials_search_trials` with: {"query": "BCL2 RECRUITING"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
 ```
 
-### Disease → Targets → Drugs → Trials
+### Disease → Targets → Drugs → Trials (Full Chain)
 
-```bash
-# 1. Find top targets for disease
-curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ disease(efoId: \"EFO_0000574\") { name associatedTargets(page: {size: 3}) { rows { target { approvedSymbol } score } } } }"}' \
-  | jq '.data.disease'
-
-# 2. Get drugs for top target
-curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ target(ensemblId: \"ENSG00000171791\") { knownDrugs(page: {size: 5}) { rows { drug { name id } phase } } } }"}' \
-  | jq '.data.target.knownDrugs.rows'
-
-# 3. Find trials for drug
-curl -s "https://clinicaltrials.gov/api/v2/studies?query.intr=venetoclax&filter.overallStatus=RECRUITING&pageSize=3&format=json" \
-  | jq '.studies[] | {nct: .protocolSection.identificationModule.nctId, condition: .protocolSection.conditionsModule.conditions[0]}'
 ```
+# Step 1: LOCATE — Find top targets for disease (curl — disease-centric query)
+curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ disease(efoId: \"EFO_0000574\") { name associatedTargets(page: {index: 0, size: 3}) { rows { target { approvedSymbol ensemblId: id } score } } } }"}'
+
+# Step 2: LOCATE — Get drugs for top target (MCP)
+Call `opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
+→ Claude Code name: mcp__biosciences-mcp__opentargets_get_target
+
+# Step 3: LOCATE — Find trials for drug (MCP)
+Call `clinicaltrials_search_trials` with: {"query": "venetoclax leukemia RECRUITING"}
+→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+```
+
+## Fallback Patterns
+
+| Primary Search | Fallback | When |
+|---------------|----------|------|
+| Drug + disease trial search | Disease-only search | Zero results for drug+disease combination |
+| Specific drug name search | Broader mechanism class search | Drug name not in ClinicalTrials.gov |
 
 ## Rate Limits
 
 | API | Limit | Notes |
 |-----|-------|-------|
-| Open Targets | 100 req/s | No auth required |
-| ClinicalTrials.gov | Varies | May block automated clients |
+| Open Targets | ~5 req/s (practical) | No auth required; 0.2s delay in production |
+| ClinicalTrials.gov | Varies | May block automated clients; curl is reliable |
 
-## Notes
+## Pitfalls
 
+- **Open Targets requires Ensembl Gene IDs** (ENSG*) for target queries; use EFO IDs for disease queries.
+- **Always include `index: 0`** in Open Targets pagination: `page: {index: 0, size: N}`.
 - **ClinicalTrials.gov** uses Cloudflare protection that may block Python httpx clients. Use curl for reliable access.
-- **Open Targets** requires Ensembl Gene IDs (ENSG*) for target queries; use EFO IDs for disease queries.
-
-## Query Best Practices
-
-### Clinical Trials
-- **Default status=RECRUITING** for active research landscape
-- Use phase filter only for specific analysis:
-  - **PHASE3+**: Commercialization/late-stage pipeline analysis
-  - **PHASE1/2**: Early pipeline, first-in-human studies
-  - **No filter**: Full landscape view (all phases)
-- Don't assume phase filter is always needed
-
-### Open Targets
-- Requires Ensembl Gene IDs (ENSG*) for target queries
-- Use EFO IDs for disease queries (search first to resolve)
-- Use nested GraphQL queries to minimize API calls
-
-### Common Pitfalls
-- Don't filter by PHASE3+ for general drug discovery
-- Recruiting trials are most relevant for collaboration opportunities
-- Completed trials provide outcome data but may be outdated
+- **`filter.studyType` is NOT valid** in v2 API. Use `query.term=AREA[StudyType]INTERVENTIONAL`.
 
 ## See Also
 
-- [references/opentargets-schema.md](references/opentargets-schema.md) - GraphQL schema reference
-- [references/clinicaltrials-fields.md](references/clinicaltrials-fields.md) - Study field reference
+- **biosciences-graph-builder**: Orchestrator for full Fuzzy-to-Fact protocol
+- **biosciences-pharmacology**: ChEMBL, PubChem drug endpoints
