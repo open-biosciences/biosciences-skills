@@ -50,12 +50,12 @@ SpecKit workflow example:
 
 ## Dependencies
 
-- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) — ADR-002 (skills structure) and ADR-003 (SpecKit workflow)
+- [biosciences-program](https://github.com/open-biosciences/biosciences-program) — ADR-002 (skills structure) and ADR-003 (SpecKit workflow)
 
 ## Related Repos
 
 - [platform-skills](https://github.com/open-biosciences/platform-skills) — platform skills (scaffold commands, security review)
-- [biosciences-architecture](https://github.com/open-biosciences/biosciences-architecture) — governance and ADRs
+- [biosciences-program](https://github.com/open-biosciences/biosciences-program) — governance and ADRs
 - [biosciences-program](https://github.com/open-biosciences/biosciences-program) — SpecKit commands and migration coordination
 - [biosciences-evaluation](https://github.com/open-biosciences/biosciences-evaluation) — quality gates that measure skill effectiveness
 
