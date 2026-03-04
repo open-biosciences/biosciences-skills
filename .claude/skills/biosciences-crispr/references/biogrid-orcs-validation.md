@@ -164,7 +164,7 @@ awk 'BEGIN{FS="\t"} {print "Screen " $1 ": score=" $6 ", FDR=" $18}'
 1. **Always use Entrez IDs** - Gene symbols can be ambiguous
 2. **Check `.env` first** - Don't assume no API key exists
 3. **Use correct endpoint** - `orcsws.thebiogrid.org` not `orcs.thebiogrid.org`
-4. **Don't use format=json** - Causes API key format errors
+4. **Use format=json for structured parsing** - Add `&format=json` for JSON responses parseable with jq; omit (or any other value) for tab-separated (TSV) output. Note: `format=xml` silently returns TSV, not XML — only `json` and `tab` are real formats
 5. **Query screens first** - Use `/screens/?cellLine={name}` to get Screen IDs before querying gene data
 6. **Validate with multiple lines** - Single cell line isn't sufficient for strong claims
 7. **Consider biological context** - Synthetic lethality can be context-dependent
