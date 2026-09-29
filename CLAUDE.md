@@ -28,6 +28,7 @@ Skills are stored in `.claude/skills/` and follow the Platform-as-Product patter
 | `biosciences-pharmacology` | ChEMBL, PubChem, DrugBank, IUPHAR curl endpoints | "drug search", "compound lookup" |
 | `biosciences-clinical` | Open Targets, ClinicalTrials.gov curl endpoints | "clinical trials", "disease associations" |
 | `biosciences-graph-builder` | Fuzzy-to-Fact orchestration workflow | "build graph", "knowledge graph" |
+| `biosciences-graph-refinement` | Bounded, evidence-first revision of an existing graph; claim statuses, provenance, deterministic validation, human escalation (proposed contract) | "refine graph", "fix dangling edge", "downgrade claim", "mark validated" |
 
 ## Graphiti Skills (Global)
 
@@ -63,6 +64,16 @@ New skills must follow ADR-002:
 2. Write `SKILL.md` with clear triggers and constraints
 3. Add `templates/` for any boilerplate
 4. Test that the skill triggers correctly from natural language
+
+### Codex discovery
+
+`.claude/skills/` is the only copy of a skill's content. For Codex, which scans `.agents/skills/` ([Codex skills docs](https://developers.openai.com/codex/skills)), add a relative symlink rather than a copy:
+
+```bash
+ln -s ../../.claude/skills/{name} .agents/skills/{name}
+```
+
+`biosciences-graph-refinement` is the first skill exposed this way; the others are not yet linked.
 
 ## Dependencies
 
