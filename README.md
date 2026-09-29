@@ -16,6 +16,7 @@ Six skills in `.claude/skills/`:
 | biosciences-crispr | CRISPR gene editing workflows |
 | biosciences-genomics | Genomic data analysis and annotation |
 | biosciences-graph-builder | Knowledge graph construction patterns |
+| biosciences-graph-refinement | Evidence-first revision and review of an existing knowledge graph (proposed) |
 | biosciences-pharmacology | Drug targets, mechanisms, pharmacology |
 | biosciences-proteomics | Protein structure, interactions, pathways |
 
