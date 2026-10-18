@@ -28,13 +28,11 @@ All MCP tools in this skill support a `slim` parameter for token-efficient queri
 **Example:**
 ```
 # LOCATE: Find top 10 gene candidates (slim=true for speed)
-Call `hgnc_search_genes` with: {"query": "TNF", "slim": true, "page_size": 10}
-→ Claude Code name: mcp__biosciences-mcp__hgnc_search_genes
+Call `biosciences-mcp:hgnc_search_genes` with: {"query": "TNF", "slim": true, "page_size": 10}
 → Returns minimal fields: ID, symbol, name only (~20 tokens each)
 
 # RETRIEVE: Get full record for validation (slim=false, default)
-Call `hgnc_get_gene` with: {"hgnc_id": "HGNC:11892"}
-→ Claude Code name: mcp__biosciences-mcp__hgnc_get_gene
+Call `biosciences-mcp:hgnc_get_gene` with: {"hgnc_id": "HGNC:11892"}
 → Returns complete metadata with cross-references (~115 tokens)
 ```
 
@@ -50,8 +48,7 @@ Call `hgnc_get_gene` with: {"hgnc_id": "HGNC:11892"}
 
 PRIMARY (MCP tool):
 ```
-Call `opentargets_search_targets` with: {"query": "breast cancer"}
-→ Claude Code name: mcp__biosciences-mcp__opentargets_search_targets
+Call `biosciences-mcp:opentargets_search_targets` with: {"query": "breast cancer"}
 → Returns: target/disease IDs and names
 ```
 
@@ -67,8 +64,7 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
 
 PRIMARY (MCP tool):
 ```
-Call `opentargets_get_associations` with: {"ensembl_id": "ENSG00000141510"}
-→ Claude Code name: mcp__biosciences-mcp__opentargets_get_associations
+Call `biosciences-mcp:opentargets_get_associations` with: {"ensembl_id": "ENSG00000141510"}
 → Returns: associated diseases with scores and evidence types
 ```
 
@@ -96,8 +92,7 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
 
 PRIMARY (MCP tool):
 ```
-Call `opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
-→ Claude Code name: mcp__biosciences-mcp__opentargets_get_target
+Call `biosciences-mcp:opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
 → Returns: knownDrugs with drug name, phase, mechanismOfAction
 ```
 
@@ -152,8 +147,7 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
 
 PRIMARY (MCP tool):
 ```
-Call `clinicaltrials_search_trials` with: {"query": "breast cancer"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+Call `biosciences-mcp:clinicaltrials_search_trials` with: {"query": "breast cancer"}
 → Returns: NCT IDs, titles, phases, statuses
 ```
 
@@ -167,8 +161,7 @@ curl -s "https://clinicaltrials.gov/api/v2/studies?query.cond=breast+cancer&page
 
 PRIMARY (MCP tool):
 ```
-Call `clinicaltrials_search_trials` with: {"query": "venetoclax"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+Call `biosciences-mcp:clinicaltrials_search_trials` with: {"query": "venetoclax"}
 ```
 
 FALLBACK (curl):
@@ -195,8 +188,7 @@ curl -s "https://clinicaltrials.gov/api/v2/studies?query.term=AREA[StudyType]INT
 
 PRIMARY (MCP tool):
 ```
-Call `clinicaltrials_get_trial` with: {"nct_id": "NCT00461032"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_get_trial
+Call `biosciences-mcp:clinicaltrials_get_trial` with: {"nct_id": "NCT00461032"}
 → Returns: title, status, phase, conditions, interventions
 ```
 
@@ -217,8 +209,7 @@ curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
 
 PRIMARY (MCP tool):
 ```
-Call `clinicaltrials_get_trial_locations` with: {"nct_id": "NCT00461032"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_get_trial_locations
+Call `biosciences-mcp:clinicaltrials_get_trial_locations` with: {"nct_id": "NCT00461032"}
 → Returns: trial site locations
 ```
 
@@ -268,8 +259,7 @@ curl -s "https://clinicaltrials.gov/api/v2/studies/NCT00461032?format=json" \
 
 ```
 # Step 1: RETRIEVE — Get target-disease association score (MCP)
-Call `opentargets_get_associations` with: {"ensembl_id": "ENSG00000171791"}
-→ Claude Code name: mcp__biosciences-mcp__opentargets_get_associations
+Call `biosciences-mcp:opentargets_get_associations` with: {"ensembl_id": "ENSG00000171791"}
 
 # Step 2: RETRIEVE — Check tractability (curl — no MCP tool for this)
 curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
@@ -278,8 +268,7 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   | jq '.data.target.tractability'
 
 # Step 3: LOCATE — Find clinical trials (MCP)
-Call `clinicaltrials_search_trials` with: {"query": "BCL2 RECRUITING"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+Call `biosciences-mcp:clinicaltrials_search_trials` with: {"query": "BCL2 RECRUITING"}
 ```
 
 ### Disease → Targets → Drugs → Trials (Full Chain)
@@ -291,12 +280,10 @@ curl -s -X POST "https://api.platform.opentargets.org/api/v4/graphql" \
   -d '{"query": "{ disease(efoId: \"EFO_0000574\") { name associatedTargets(page: {index: 0, size: 3}) { rows { target { approvedSymbol ensemblId: id } score } } } }"}'
 
 # Step 2: LOCATE — Get drugs for top target (MCP)
-Call `opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
-→ Claude Code name: mcp__biosciences-mcp__opentargets_get_target
+Call `biosciences-mcp:opentargets_get_target` with: {"ensembl_id": "ENSG00000171791"}
 
 # Step 3: LOCATE — Find trials for drug (MCP)
-Call `clinicaltrials_search_trials` with: {"query": "venetoclax leukemia RECRUITING"}
-→ Claude Code name: mcp__biosciences-mcp__clinicaltrials_search_trials
+Call `biosciences-mcp:clinicaltrials_search_trials` with: {"query": "venetoclax leukemia RECRUITING"}
 ```
 
 ## Fallback Patterns
