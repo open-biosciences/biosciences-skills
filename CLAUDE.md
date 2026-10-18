@@ -100,50 +100,52 @@ mcp.mount(hgnc_mcp, prefix="hgnc", as_proxy=False,
     tool_names={"search_genes": "hgnc_search_genes", "get_gene": "hgnc_get_gene"})
 ```
 
-When accessing tools via the FastMCP Cloud gateway in Claude Code, the MCP server name is prepended as an additional prefix using double-underscores:
+In skills, reference a gateway tool by server and tool name, the `ServerName:tool_name` form from Anthropic's skill-authoring guidance:
 
 ```
-mcp__biosciences-mcp__<gateway_tool_name>
+biosciences-mcp:<gateway_tool_name>
 ```
 
-Full tool inventory (gateway name → Claude Code name):
+Claude Code's full tool name depends on which configuration provides the server: `mcp__plugin_bio-research_biosciences-mcp__<gateway_tool_name>` when the bio-research plugin provides it, or `mcp__<server-key>__<gateway_tool_name>` when a user, project or local `.mcp.json` entry for the same URL takes precedence. Write the full name only where Claude Code requires one (permission rules, `allowed-tools`, subagent `tools`, hook matchers).
 
-| Gateway Tool | Claude Code Name |
+Full tool inventory (gateway name → skill reference):
+
+| Gateway Tool | Skill Reference |
 |---|---|
-| `hgnc_search_genes` | `mcp__biosciences-mcp__hgnc_search_genes` |
-| `hgnc_get_gene` | `mcp__biosciences-mcp__hgnc_get_gene` |
-| `uniprot_search_proteins` | `mcp__biosciences-mcp__uniprot_search_proteins` |
-| `uniprot_get_protein` | `mcp__biosciences-mcp__uniprot_get_protein` |
-| `chembl_search_compounds` | `mcp__biosciences-mcp__chembl_search_compounds` |
-| `chembl_get_compound` | `mcp__biosciences-mcp__chembl_get_compound` |
-| `chembl_get_compounds_batch` | `mcp__biosciences-mcp__chembl_get_compounds_batch` |
-| `opentargets_search_targets` | `mcp__biosciences-mcp__opentargets_search_targets` |
-| `opentargets_get_target` | `mcp__biosciences-mcp__opentargets_get_target` |
-| `opentargets_get_associations` | `mcp__biosciences-mcp__opentargets_get_associations` |
-| `string_search_proteins` | `mcp__biosciences-mcp__string_search_proteins` |
-| `string_get_interactions` | `mcp__biosciences-mcp__string_get_interactions` |
-| `string_get_network_image_url` | `mcp__biosciences-mcp__string_get_network_image_url` |
-| `biogrid_search_genes` | `mcp__biosciences-mcp__biogrid_search_genes` |
-| `biogrid_get_interactions` | `mcp__biosciences-mcp__biogrid_get_interactions` |
-| `ensembl_search_genes` | `mcp__biosciences-mcp__ensembl_search_genes` |
-| `ensembl_get_gene` | `mcp__biosciences-mcp__ensembl_get_gene` |
-| `ensembl_get_transcript` | `mcp__biosciences-mcp__ensembl_get_transcript` |
-| `entrez_search_genes` | `mcp__biosciences-mcp__entrez_search_genes` |
-| `entrez_get_gene` | `mcp__biosciences-mcp__entrez_get_gene` |
-| `entrez_get_pubmed_links` | `mcp__biosciences-mcp__entrez_get_pubmed_links` |
-| `pubchem_search_compounds` | `mcp__biosciences-mcp__pubchem_search_compounds` |
-| `pubchem_get_compound` | `mcp__biosciences-mcp__pubchem_get_compound` |
-| `iuphar_search_ligands` | `mcp__biosciences-mcp__iuphar_search_ligands` |
-| `iuphar_get_ligand` | `mcp__biosciences-mcp__iuphar_get_ligand` |
-| `iuphar_search_targets` | `mcp__biosciences-mcp__iuphar_search_targets` |
-| `iuphar_get_target` | `mcp__biosciences-mcp__iuphar_get_target` |
-| `wikipathways_search_pathways` | `mcp__biosciences-mcp__wikipathways_search_pathways` |
-| `wikipathways_get_pathway` | `mcp__biosciences-mcp__wikipathways_get_pathway` |
-| `wikipathways_get_pathways_for_gene` | `mcp__biosciences-mcp__wikipathways_get_pathways_for_gene` |
-| `wikipathways_get_pathway_components` | `mcp__biosciences-mcp__wikipathways_get_pathway_components` |
-| `clinicaltrials_search_trials` | `mcp__biosciences-mcp__clinicaltrials_search_trials` |
-| `clinicaltrials_get_trial` | `mcp__biosciences-mcp__clinicaltrials_get_trial` |
-| `clinicaltrials_get_trial_locations` | `mcp__biosciences-mcp__clinicaltrials_get_trial_locations` |
+| `hgnc_search_genes` | `biosciences-mcp:hgnc_search_genes` |
+| `hgnc_get_gene` | `biosciences-mcp:hgnc_get_gene` |
+| `uniprot_search_proteins` | `biosciences-mcp:uniprot_search_proteins` |
+| `uniprot_get_protein` | `biosciences-mcp:uniprot_get_protein` |
+| `chembl_search_compounds` | `biosciences-mcp:chembl_search_compounds` |
+| `chembl_get_compound` | `biosciences-mcp:chembl_get_compound` |
+| `chembl_get_compounds_batch` | `biosciences-mcp:chembl_get_compounds_batch` |
+| `opentargets_search_targets` | `biosciences-mcp:opentargets_search_targets` |
+| `opentargets_get_target` | `biosciences-mcp:opentargets_get_target` |
+| `opentargets_get_associations` | `biosciences-mcp:opentargets_get_associations` |
+| `string_search_proteins` | `biosciences-mcp:string_search_proteins` |
+| `string_get_interactions` | `biosciences-mcp:string_get_interactions` |
+| `string_get_network_image_url` | `biosciences-mcp:string_get_network_image_url` |
+| `biogrid_search_genes` | `biosciences-mcp:biogrid_search_genes` |
+| `biogrid_get_interactions` | `biosciences-mcp:biogrid_get_interactions` |
+| `ensembl_search_genes` | `biosciences-mcp:ensembl_search_genes` |
+| `ensembl_get_gene` | `biosciences-mcp:ensembl_get_gene` |
+| `ensembl_get_transcript` | `biosciences-mcp:ensembl_get_transcript` |
+| `entrez_search_genes` | `biosciences-mcp:entrez_search_genes` |
+| `entrez_get_gene` | `biosciences-mcp:entrez_get_gene` |
+| `entrez_get_pubmed_links` | `biosciences-mcp:entrez_get_pubmed_links` |
+| `pubchem_search_compounds` | `biosciences-mcp:pubchem_search_compounds` |
+| `pubchem_get_compound` | `biosciences-mcp:pubchem_get_compound` |
+| `iuphar_search_ligands` | `biosciences-mcp:iuphar_search_ligands` |
+| `iuphar_get_ligand` | `biosciences-mcp:iuphar_get_ligand` |
+| `iuphar_search_targets` | `biosciences-mcp:iuphar_search_targets` |
+| `iuphar_get_target` | `biosciences-mcp:iuphar_get_target` |
+| `wikipathways_search_pathways` | `biosciences-mcp:wikipathways_search_pathways` |
+| `wikipathways_get_pathway` | `biosciences-mcp:wikipathways_get_pathway` |
+| `wikipathways_get_pathways_for_gene` | `biosciences-mcp:wikipathways_get_pathways_for_gene` |
+| `wikipathways_get_pathway_components` | `biosciences-mcp:wikipathways_get_pathway_components` |
+| `clinicaltrials_search_trials` | `biosciences-mcp:clinicaltrials_search_trials` |
+| `clinicaltrials_get_trial` | `biosciences-mcp:clinicaltrials_get_trial` |
+| `clinicaltrials_get_trial_locations` | `biosciences-mcp:clinicaltrials_get_trial_locations` |
 
 ### Domain Skill Migration Note
 
@@ -159,8 +161,8 @@ After migration to the unified gateway, update domain skill pseudocode and examp
 
 ```python
 # New pattern (unified gateway)
-# mcp__biosciences-mcp__hgnc_search_genes
-# mcp__biosciences-mcp__uniprot_get_protein
+# biosciences-mcp:hgnc_search_genes
+# biosciences-mcp:uniprot_get_protein
 ```
 
-The Fuzzy-to-Fact workflow, CURIE formats, and all tool arguments remain unchanged. Only the Claude Code prefix (`mcp__<server>__`) changes from server-specific to `mcp__biosciences-mcp__`.
+The Fuzzy-to-Fact workflow, CURIE formats, and all tool arguments remain unchanged. Only the server changes, from per-API servers to `biosciences-mcp`.
