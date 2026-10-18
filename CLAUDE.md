@@ -106,7 +106,7 @@ In skills, reference a gateway tool by server and tool name, the `ServerName:too
 biosciences-mcp:<gateway_tool_name>
 ```
 
-Claude Code's full tool name depends on which configuration provides the server: `mcp__plugin_bio-research_biosciences-mcp__<gateway_tool_name>` when the bio-research plugin provides it, or `mcp__<server-key>__<gateway_tool_name>` when a user, project or local `.mcp.json` entry for the same URL takes precedence. Write the full name only where Claude Code requires one (permission rules, `allowed-tools`, subagent `tools`, hook matchers).
+Claude Code's full tool name depends on which configuration provides the server: `mcp__plugin_bio-research_biosciences-mcp__<gateway_tool_name>` when the bio-research plugin provides it, or `mcp__<server-key>__<gateway_tool_name>` when a user, project or local `.mcp.json` entry for the same URL takes precedence. Write the full name only where Claude Code requires one (permission rules, `allowed-tools`, subagent `tools`, hook matchers), and list both forms there, because which one applies depends on the install.
 
 Full tool inventory (gateway name → skill reference):
 
